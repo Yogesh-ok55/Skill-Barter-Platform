@@ -12,58 +12,17 @@
             padding: 16px;
             margin-bottom: 16px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            position: relative;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            transition: background-color 0.3s ease;
         }
 
         .message-box:hover {
             background-color: #4a5568;
         }
 
-        .message-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            width: 100%;
-        }
-
-        .message-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-        }
-
-        .btn {
-            border: none;
-            border-radius: 4px;
-            color: #fff;
-            padding: 8px 16px;
-            cursor: pointer;
-            font-size: 0.875rem;
-        }
-
-        .btn-show {
-            background-color: #3182ce;
-        }
-
-        .btn-show:hover {
-            background-color: #2b6cb0;
-        }
-
-        .btn-delete {
-            background-color: #e53e3e;
-        }
-
-        .btn-delete:hover {
-            background-color: #c53030;
-        }
-
         .username {
             font-weight: bold;
             color: #63b3ed;
+            word-wrap: break-word;
         }
     </style>
 </head>
@@ -81,17 +40,19 @@
 
         <% if(data.length>0) {%>
         <% data.forEach(item=>{%>
-        <div class="message-box">
-            <div class="message-header">
-                <h1 class="message-sender text-2xl ">UserID: <%= item.to %></h1>
-            </div>
-            <div class="message-actions">
-                <button class="btn btn-show "><a href="text/<%= item.to %>">Show Conversation</a></button>
-                <button class="btn btn-delete"><a href=" delete/<%= item.to %>">Delete</a></button>
+        <div class="message-box flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <h1 class="message-sender text-xl sm:text-2xl mb-4 sm:mb-0 break-words">UserID: <span class="username"><%= item.to %></span></h1>
+            <div class="message-actions flex gap-4 mt-2 sm:mt-0">
+                <button class="btn btn-show bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+                    <a href="text/<%= item.to %>">Show Conversation</a>
+                </button>
+                <button class="btn btn-delete bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">
+                    <a href="delete/<%= item.to %>">Delete</a>
+                </button>
             </div>
         </div>
          <% })%>
-        <% }%>
+        <% } %>
     </section>
 </body>
 </html>
