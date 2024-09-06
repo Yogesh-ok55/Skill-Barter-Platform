@@ -70,14 +70,20 @@ app.get("/footer",isLoggedIn,(req,res)=>{
     res.render("footer",{result:{}})
 })
 
-app.post("/footer",isLoggedIn,async (req, res) => {
+app.post("/footer", isLoggedIn, async (req, res) => {
     let { search } = req.body;
-  
+    let currentUsername = req.user.username;  // Assuming the username is stored in req.user
+
     // Use a regular expression for partial matching (case-insensitive)
-    let result = await loginModel.find({ skill: { $regex: search, $options: "i" } });
-  
+    // Also, exclude the current user from the results
+    let result = await loginModel.find({
+        skill: { $regex: search, $options: "i" },
+        username: { $ne: currentUsername }  // Exclude the current user
+    });
+
     res.render("footer", { result: result });
-  });
+});
+
   
 
 app.get("/message",isLoggedIn,(req,res)=>{
