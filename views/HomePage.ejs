@@ -115,24 +115,19 @@
 
     <!-- Navbar -->
     <nav class="flex items-center justify-between p-6 bg-zinc-800 shadow-md relative">
-        <div class="flex items-center justify-center space-x-4">
+        <div class="flex items-center space-x-4">
             <!-- Logo -->
             <img src="images/logo1.png" alt="Skill Barter Logo" class="h-10 animate-fadeIn rounded-xl">
-            <h4 class="text-3xl font-bold font-mono animate-slideInDown">Skill Barter Platform</h4>
+            <h4 class="md:text-3xl sm:text-xl font-bold font-mono animate-slideInDown">Skill Barter Platform</h4>
         </div>
 
-        <!-- Search Icon -->
-        
-
         <!-- Navigation Links -->
-        <div class="hidden md:flex space-x-6 nav-links flex items-center">
-            <div class="flex items-center space-x-4">
-                <div class="search-icon animate-fadeIn" id="search-icon">
-                    <a href="/footer"><i class="fas fa-search"></i></a>
-                </div>
+        <div class="hidden md:flex  md:gap-4 space-x-6 nav-links flex items-center">
+            <div class="search-icon animate-fadeIn" id="search-icon">
+                <a href="/footer"><i class="fas fa-search"></i></a>
             </div>
-            <a href="/aboutus" class=" text-xl hover:text-blue-500 hover-bounce font-mono">About Us</a>
-            <a href="/dashboard" class=" text-xl hover:text-blue-500 hover-bounce font-mono">Profile</a>
+            <a href="/aboutus" class="text-xl hover:text-blue-500 hover-bounce font-mono">About Us</a>
+            <a href="/dashboard" class="text-xl hover:text-blue-500 hover-bounce font-mono">Profile</a>
             <a href="/PersonalMessages"><i class="fa-solid fa-message cursor-pointer"></i></a>
             <button class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded shadow-lg transition duration-300">
                 <a href="/logout">Logout</a>
@@ -149,8 +144,9 @@
         </div>
     </nav>
 
+
     <!-- Main Section -->
-    <main class="flex flex-col items-center justify-center min-h-screen text-center p-8 bg-cover-midsection">
+    <main class="flex flex-col items-center justify-center min-h-screen text-center p-8">
         <div>
             <span class="text-4xl font-bold animate-slideInDown mb-6 font-sans ">WELCOME ,  </span>  
             <span class="text-6xl text-blue-500 font-bold font-mono"> <%=name %> </span>
@@ -176,7 +172,7 @@
             <!-- Step 2 -->
             <div class="info-box animate-fadeIn">
                 <div class="info-box-number">2</div>
-                <div class="info-box-text font-mono">Connect with Them</div>
+                <div class="info-box-text font-mono">Connect with Them by messaging</div>
             </div>
             <!-- Arrow -->
             <div class="hidden md:block">
@@ -194,7 +190,7 @@
         </div>
 
         <!-- Additional Text Section -->
-        <div class="mt-12 max-w-3xl text-left">
+        <div class="mt-12 max-w-3xl text-left flex-col flex">
             <h2 class="text-3xl ml-30px font-semibold mb-4 mt-20 animate-fadeIn text-blue-500 font-sans">HOW IT WORKS</h2>
             <p class="mb-4 animate-fadeIn font-mono">
                 Skill Barter Platform is designed to help you connect with like-minded individuals who share your interests
@@ -210,7 +206,7 @@
     </main>
 
     <!-- Media Section -->
-    <section class="mt-3 p-8 bg-zinc-900 text-white">
+    <section class="mt-9 p-8 bg-zinc-900 text-white">
         <h2 class="text-3xl font-semibold text-center mb-8 animate-slideInDown text-blue-500 font-sans">MEDIA GALLERY</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <!-- Media Item 1 -->
