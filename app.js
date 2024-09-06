@@ -30,10 +30,14 @@ app.post("/register",async (req,res)=>{
    
     let {name,username,skill,email,github,linkedin,password}=req.body
 
+    username=username.toLowerCase();
+
     let user=await loginModel.findOne({username})
     if(user){
         return res.status(500).send("User Alrady Registerd")
     }
+
+   
     
     const saltRounds=10;
     bcrypt.genSalt(saltRounds,(err,salt)=>{
@@ -62,19 +66,21 @@ app.get("/Register",(req,res)=>{
     res.render("index")
 })
 
-app.get("/footer",(req,res)=>{
+app.get("/footer",isLoggedIn,(req,res)=>{
     res.render("footer",{result:{}})
 })
 
-app.post("/footer",async (req,res)=>{
-    let {search} =req.body
-    
-    let result = await loginModel.find({skill:search})
-    
-    res.render("footer",{result:result})
-})
+app.post("/footer",isLoggedIn,async (req, res) => {
+    let { search } = req.body;
+  
+    // Use a regular expression for partial matching (case-insensitive)
+    let result = await loginModel.find({ skill: { $regex: search, $options: "i" } });
+  
+    res.render("footer", { result: result });
+  });
+  
 
-app.get("/message",(req,res)=>{
+app.get("/message",isLoggedIn,(req,res)=>{
     res.render("message")
 })
 
@@ -90,6 +96,7 @@ app.get("/PersonalMessages",isLoggedIn,async (req,res)=>{
 app.post('/login',async(req,res)=>{
     let {username,password}=req.body;
 
+    username=username.toLowerCase();
     
 
     let user=await loginModel.findOne({username})
@@ -117,12 +124,12 @@ app.get("/aboutus",(req,res)=>{
     res.render('aboutus')
 })
 
-app.get('/logout',(req,res)=>{
+app.get('/logout',isLoggedIn,(req,res)=>{
     res.cookie('token', '')
     res.redirect('/')
 })
 
-app.get("/reply",(req,res)=>{
+app.get("/reply",isLoggedIn,(req,res)=>{
     res.render("MessageBox")
 })
 
