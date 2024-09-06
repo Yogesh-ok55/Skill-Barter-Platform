@@ -17,16 +17,17 @@ const jwt=require("jsonwebtoken");
 // const user = require("./models/user");
 
 
-app.set('view engine','ejs');
+app.set('views', path.join(__dirname, 'views')); // Make sure the path is correct
+app.set('view engine', 'ejs');
 
 app.get("/",(req,res)=>{
-    console.log(req.url);
+    
     res.render('login')
 })
 
 
 app.post("/register",async (req,res)=>{
-    console.log(req.body)
+   
     let {name,username,skill,email,github,linkedin,password}=req.body
 
     let user=await loginModel.findOne({username})
@@ -67,9 +68,9 @@ app.get("/footer",(req,res)=>{
 
 app.post("/footer",async (req,res)=>{
     let {search} =req.body
-    console.log(search)
+    
     let result = await loginModel.find({skill:search})
-    console.log(result)
+    
     res.render("footer",{result:result})
 })
 
@@ -80,7 +81,7 @@ app.get("/message",(req,res)=>{
 app.get("/PersonalMessages",isLoggedIn,async (req,res)=>{
     let user=req.user.username
     let data=await messageModel.find({from:user})
-    console.log(data)
+   
     res.render('PersonalMessages',{data:data})
 })
 
@@ -89,7 +90,7 @@ app.get("/PersonalMessages",isLoggedIn,async (req,res)=>{
 app.post('/login',async(req,res)=>{
     let {username,password}=req.body;
 
-    console.log(req.body)
+    
 
     let user=await loginModel.findOne({username})
     if(!user){
@@ -128,7 +129,7 @@ app.get("/reply",(req,res)=>{
 app.get("/text/:username", isLoggedIn, async (req, res) => {
     let userMessages = await messageModel.findOne({ from: req.user.username, to: req.params.username });
     let user = (userMessages ? userMessages.content : []);
-    console.log(userMessages);
+    
     res.render("text", { username: req.params.username, usermessage: user });
 });
 
@@ -136,9 +137,9 @@ app.get("/text/:username", isLoggedIn, async (req, res) => {
 app.post("/text/:username", isLoggedIn, async (req, res) => {
     let from = req.user.username;
     let to = req.params.username;
-    console.log(from, to);
+    
     let messagesobject = `${from}: ${req.body.text}`;
-    console.log(messagesobject);
+    
 
     // Update message for the recipient
     let m1 = await messageModel.findOneAndUpdate(
@@ -164,7 +165,7 @@ app.post("/text/:username", isLoggedIn, async (req, res) => {
 
 //protected route
 app.get('/home',isLoggedIn,async (req,res)=>{
-    console.log(req.user)
+  
     let user = await loginModel.findOne({username:req.user.username})
     res.render('HomePage',{name:user.name})
 })
@@ -194,7 +195,7 @@ app.get("/userdelete",isLoggedIn, async (req,res)=>{
 
  app.post("/updateuser",isLoggedIn, async (req,res)=>{
     let {name,skill,email,github,linkedin}=req.body;
-    console.log(req.body)
+   
     let m1 = await loginModel.findOneAndUpdate(
         { username: req.user.username }, 
         {
@@ -209,7 +210,7 @@ app.get("/userdelete",isLoggedIn, async (req,res)=>{
         } // Filter condition
         
     );
-    console.log(m1);
+   
 
     res.redirect("/dashboard");
       
