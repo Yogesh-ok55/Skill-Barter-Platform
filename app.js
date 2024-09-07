@@ -66,8 +66,10 @@ app.get("/Register",(req,res)=>{
     res.render("index")
 })
 
-app.get("/footer",isLoggedIn,(req,res)=>{
-    res.render("footer",{result:{}})
+app.get("/footer",isLoggedIn,async (req,res)=>{
+    let users=await loginModel.find({})
+    console.log(users)
+    res.render("footer",{result:users})
 })
 
 app.post("/footer", isLoggedIn, async (req, res) => {
