@@ -189,7 +189,9 @@ app.get('/delete/:username',isLoggedIn,async (req,res)=>{
 })
 
 app.get('/dashboard',isLoggedIn,async (req,res)=>{
+    console.log(req.user.username)
     let result= await loginModel.findOne({username:req.user.username})
+    console.log(result)
     res.render('dashboard',{result:result})
 })
 
@@ -202,13 +204,14 @@ app.get("/userdelete",isLoggedIn, async (req,res)=>{
 
 
  app.get("/updateuser",isLoggedIn, async (req,res)=>{
-    let result = await loginModel.findOneAndUpdate({username:req.user.username})
+    console.log(req.user.username)
+    let result = await loginModel.findOne({username:req.user.username})
     res.render('update',{result:result})
  })
 
  app.post("/updateuser",isLoggedIn, async (req,res)=>{
     let {name,skill,email,github,linkedin}=req.body;
-   
+    console.log(req.user.username)
     let m1 = await loginModel.findOneAndUpdate(
         { username: req.user.username }, 
         {
@@ -221,8 +224,10 @@ app.get("/userdelete",isLoggedIn, async (req,res)=>{
             } 
            
         } // Filter condition
+       
         
     );
+    console.log(m1)
    
 
     res.redirect("/dashboard");
@@ -233,14 +238,22 @@ app.get("/userdelete",isLoggedIn, async (req,res)=>{
  
 
 function isLoggedIn(req,res,next){
-        if(req.cookies.token===''){
-             res.send("not authorized")
+
+    
+        if (!req.cookies.token) {  // Check if the token exists
+            return res.status(401).send("Not authorized");
         }
-        else{
-            let data=jwt.verify(req.cookies.token,'secret-key')
-            req.user=data
+    
+        try {
+            let data = jwt.verify(req.cookies.token, 'secret-key');
+            req.user = data;
+            console.log(req.user)  // Attach user data to req.user
             next();
+        } catch (error) {
+            return res.status(401).send("Invalid or expired token");
         }
+    
+    
 }
 
 
