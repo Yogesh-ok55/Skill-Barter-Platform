@@ -73,7 +73,7 @@ app.post("/register",async (req,res)=>{
     transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
             console.error(error);
-            return res.status(500).send('Error sending OTP');
+            return res.status(500).send('Error in sending OTP');
         } else {
             console.log('OTP sent: ' + info.response);
             // Redirect to OTP page with email passed in the URL
