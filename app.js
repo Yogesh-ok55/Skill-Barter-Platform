@@ -134,7 +134,7 @@ app.post('/login',async(req,res)=>{
 
     let user=await loginModel.findOne({username})
     if(!user){
-        return res.status(500).render("LoginErroe");
+        return res.status(500).render("LoginError");
         
     }
 
