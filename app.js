@@ -1,5 +1,8 @@
 const express = require("express")
 const app=express()
+const nodemailer = require("nodemailer");
+const session = require("express-session");
+require('dotenv').config();
 
 const loginModel = require("./models/login")
 const messageModel = require("./models/message")
@@ -14,11 +17,28 @@ app.use(express.static(path.join(__dirname,'public')))
 
 const bcrypt=require("bcrypt")
 const jwt=require("jsonwebtoken");
-// const user = require("./models/user");
 
 
-app.set('views', path.join(__dirname, 'views')); // Make sure the path is correct
+app.set('views', path.join(__dirname, 'views')); 
 app.set('view engine', 'ejs');
+
+const otpStorage = {};
+
+app.use(session({
+    secret: 'yourSecretKey', 
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false } 
+}));
+
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.Gmail, 
+        pass: process.env.password 
+}});
+
+
 
 app.get("/",(req,res)=>{
     
@@ -27,37 +47,39 @@ app.get("/",(req,res)=>{
 
 
 app.post("/register",async (req,res)=>{
+    const { name, username, skill, email, github, linkedin, password } = req.body;
+
+    
+    req.session.registrationData = { name, username, skill, email, github, linkedin, password };
+
+    
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
    
-    let {name,username,skill,email,github,linkedin,password}=req.body
+    otpStorage[email] = otp;
+    console.log(otp+" "+otpStorage[email]);
 
-    username=username.toLowerCase();
+    
+    const mailOptions = {
+        from: 'your-email@example.com',
+        to: email,
+        subject: 'Your OTP for 2-Factor Authentication',
+        text: `Your OTP is ${otp}. It is valid for 5 minutes.`
+    };
 
-    let user=await loginModel.findOne({username})
-    if(user){
-        return res.status(500).send("User Alrady Registerd")
-    }
-
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.error(error);
+            return res.status(500).send('Error sending OTP');
+        } else {
+            console.log('OTP sent: ' + info.response);
+            // Redirect to OTP page with email passed in the URL
+            res.redirect(`/otpVerification?email=${email}`);
+        }
+    });
    
     
-    const saltRounds=10;
-    bcrypt.genSalt(saltRounds,(err,salt)=>{
-        bcrypt.hash(password,salt,async (err,hash)=>{
-            let user = await loginModel.create({
-                name,
-                username,
-                skill,
-                email,
-                github,
-                linkedin,
-                password:hash
-            })
-
-            let token=jwt.sign({username:username,userid:user._id},'secret-key');
-            res.cookie('token',token)
-            res.render('HomePage',{name:name})
-        })
-    })
-
+    ;
   
     
 })
@@ -67,20 +89,19 @@ app.get("/Register",(req,res)=>{
 })
 
 app.get("/footer",isLoggedIn,async (req,res)=>{
-    let users=await loginModel.find({})
+    let users=await loginModel.find({username:{$ne:req.user.username}})
     console.log(users)
     res.render("footer",{result:users})
 })
 
 app.post("/footer", isLoggedIn, async (req, res) => {
     let { search } = req.body;
-    let currentUsername = req.user.username;  // Assuming the username is stored in req.user
+    let currentUsername = req.user.username;  
 
-    // Use a regular expression for partial matching (case-insensitive)
-    // Also, exclude the current user from the results
+   
     let result = await loginModel.find({
         skill: { $regex: search, $options: "i" },
-        username: { $ne: currentUsername }  // Exclude the current user
+        username: { $ne: currentUsername }  
     });
 
     res.render("footer", { result: result });
@@ -109,7 +130,7 @@ app.post('/login',async(req,res)=>{
 
     let user=await loginModel.findOne({username})
     if(!user){
-        return res.status(500).send("Email or password is invalid")
+        return res.status(500).render("LoginErroe");
         
     }
 
@@ -119,14 +140,46 @@ app.post('/login',async(req,res)=>{
             
             let token=jwt.sign({username:username,userid:user._id},'secret-key');
             res.cookie('token',token)
-            res.status(200).redirect('/home');
+            res.status(200).redirect(`/loginOTP?email=${user.email}&name=${user.name}`);
             
         }
         else{
-            res.send('Email or Password is Incorrect')
+            res.render('LoginError')
         }
     })
 })
+
+app.get("/loginOTP",(req,res)=>{
+    let email = req.query.email;
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    
+    otpStorage[email] = otp;
+    console.log(otp+" "+otpStorage[email]);
+
+    
+    const mailOptions = {
+        from: 'your-email@example.com',
+        to: email,
+        subject: 'Your OTP for 2-Factor Authentication',
+        text: `Your OTP is ${otp}. It is valid for 5 minutes.`
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.error(error);
+            return res.status(500).send('Error sending OTP');
+        } else {
+            console.log('OTP sent: ' + info.response);
+           
+            res.render("loginOTP",{email:req.query.email,name:req.query.name});
+        }
+    });
+   
+    
+})
+
+
 
 app.get("/aboutus",(req,res)=>{
     res.render('aboutus')
@@ -148,7 +201,7 @@ app.get("/text/:username", isLoggedIn, async (req, res) => {
     res.render("text", { username: req.params.username, usermessage: user });
 });
 
-// POST Route
+
 app.post("/text/:username", isLoggedIn, async (req, res) => {
     let from = req.user.username;
     let to = req.params.username;
@@ -156,24 +209,24 @@ app.post("/text/:username", isLoggedIn, async (req, res) => {
     let messagesobject = `${from}: ${req.body.text}`;
     
 
-    // Update message for the recipient
+    
     let m1 = await messageModel.findOneAndUpdate(
         { from, to },  // Filter condition
         {
-            $push: { content: messagesobject },  // Push the new message string into the content array
-            $set: { lastUpdated: Date.now() }  // Update the lastUpdated timestamp
+            $push: { content: messagesobject },  
+            $set: { lastUpdated: Date.now() }  
         },
-        { new: true, upsert: true }  // Return the updated document, create if it doesn't exist
+        { new: true, upsert: true }  
     );
 
-    // Update the message for the sender (mirrored conversation)
+   
     let m2 = await messageModel.findOneAndUpdate(
         { from: to, to: from },
         { $push: { content: messagesobject }, $set: { timestamp: Date.now() } },
         { new: true, upsert: true }
     );
 
-    // Redirect to the GET route after the message is sent
+    
     res.redirect(`/text/${to}`);
 });
 
@@ -236,20 +289,108 @@ app.get("/userdelete",isLoggedIn, async (req,res)=>{
       
  })
 
+ app.get("/otpVerification",(req,res)=>{
+
+    
+    const email = req.query.email; 
+
+    
+    const registrationData = req.session.registrationData;
+
+    
+    if (!registrationData) {
+        return res.status(400).send("Registration data missing.");
+    }
+
+    
+    res.render('otpVerification', {
+        email: email,
+    });
+ })
+
+ app.post("/loginVerify",(req,res)=>{
+    const { email, otp } = req.body;
+    const storedOtp = otpStorage[email];
+        
+        if (!storedOtp || storedOtp !== otp) {
+            return res.status(400).send("Invalid OTP.");
+        }
+
+        delete otpStorage[email];
+
+        console.log(req.query.name)
+
+        res.render('HomePage',{name:req.query.name});
+
+
+ })
+
+ 
+ app.post("/otpVerification", async (req,res)=>{
+    
+        const { email, otp } = req.body;
+        
+        
+        const storedOtp = otpStorage[email];
+        console.log(req.session.registrationData+" "+otp+" "+otpStorage[email])
+        if (!storedOtp || storedOtp !== otp) {
+            return res.status(400).send("Invalid OTP.");
+        }
+
+        delete otpStorage[email]
+    
+        
+        const registrationData = req.session.registrationData;
+        if (!registrationData) {
+            return res.status(400).send("Registration data missing.");
+        }
+    
+        
+    let { name, username, skill, password, github, linkedin } = registrationData;
+   
+       username=username.toLowerCase();
+
+    let user=await loginModel.findOne({username})
+    if(user){
+        return res.status(500).send("User Alrady Registerd")
+    }
+
+   
+    
+    const saltRounds=10;
+    bcrypt.genSalt(saltRounds,(err,salt)=>{
+        bcrypt.hash(password,salt,async (err,hash)=>{
+            let user = await loginModel.create({
+                name,
+                username,
+                skill,
+                email,
+                github,
+                linkedin,
+                password:hash
+            })
+
+            let token=jwt.sign({username:username,userid:user._id},'secret-key');
+            res.cookie('token',token)
+            res.render('HomePage',{name:name})
+        })
+    })
+ })
+
  
  
 
 function isLoggedIn(req,res,next){
 
     
-        if (!req.cookies.token) {  // Check if the token exists
+        if (!req.cookies.token) {  
             return res.status(401).send("Not authorized");
         }
     
         try {
             let data = jwt.verify(req.cookies.token, 'secret-key');
             req.user = data;
-            console.log(req.user)  // Attach user data to req.user
+            console.log(req.user)  
             next();
         } catch (error) {
             return res.status(401).send("Invalid or expired token");
@@ -257,6 +398,10 @@ function isLoggedIn(req,res,next){
     
     
 }
+
+app.use((req, res) => {
+    res.status(404).render('Error');
+});
 
 
 app.listen(3000,()=>{

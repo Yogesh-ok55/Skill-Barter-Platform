@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Error - Skill Barter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../public/css/login.css">
+    <style>
+        /* Custom animations */
+        @keyframes slideIn {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+
+        .animate-slideIn {
+            animation: slideIn 0.6s ease-out;
+        }
+
+        .animate-shake {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        .error-message {
+            color: #e53e3e; /* Red */
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-top: 20px;
+        }
+
+        .error-box {
+            background-color: #1f2937; /* Darker Background */
+            padding: 25px;
+            border-radius: 8px;
+            border: 2px solid #e53e3e; /* Red border */
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .error-header {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-r from-zinc-900 to-zinc-800 text-white flex items-center justify-center min-h-screen">
+    <div class="p-10 w-full max-w-md bg-zinc-800 rounded-lg shadow-lg animate-slideIn">
+        <h1 class="error-header text-center">Login Error</h1>
+        <div class="error-box animate-shake">
+            <p class="error-message">Incorrect username or password. Please try again.</p>
+            <a class="mt-4 text-blue-500 hover:underline" href="/">Go back to Login</a>
+        </div>
+    </div>
+</body>
+</html>
