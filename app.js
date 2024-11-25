@@ -1,28 +1,35 @@
 const express = require("express")
 const app=express()
-const nodemailer = require("nodemailer");
 const session = require("express-session");
-require('dotenv').config();
-
 const loginModel = require("./models/login")
 const messageModel = require("./models/message")
-
 const cookieparser = require("cookie-parser");
 const path = require('path');
+const otpStorage = require('./storage');
+const jwt=require("jsonwebtoken");
+
+require('dotenv').config();
+
+const register = require('./routes/register')
+const login = require('./routes/login')
+const otpVerification = require('./routes/otpVerification')
+const transporter = require('./transporter');
 
 app.use(cookieparser());
 app.use(express.json())
 app.use(express.urlencoded({extended:true}))
 app.use(express.static(path.join(__dirname,'public')))
 
-const bcrypt=require("bcrypt")
-const jwt=require("jsonwebtoken");
+
 
 
 app.set('views', path.join(__dirname, 'views')); 
 app.set('view engine', 'ejs');
 
-const otpStorage = {};
+
+
+
+
 
 app.use(session({
     secret: 'yourSecretKey', 
@@ -31,16 +38,7 @@ app.use(session({
     cookie: { secure: false } 
 }));
 
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    host: 'smtp.gmail.com',  // SMTP server for Gmail
-    port: 587,  // Use 587 for TLS (StartTLS)
-    secure: false,
-    type: "login",
-    auth: {
-        user: process.env.Gmail, 
-        pass: process.env.password 
-}});
+
 
 
 
@@ -50,44 +48,8 @@ app.get("/",(req,res)=>{
 })
 
 
-app.post("/register",async (req,res)=>{
-    const { name, username, skill, email, github, linkedin, password } = req.body;
-
-    
-    req.session.registrationData = { name, username, skill, email, github, linkedin, password };
-
-    
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
-   
-    otpStorage[email] = otp;
-    console.log(otp+" "+otpStorage[email]);
-
-    
-    const mailOptions = {
-        from: 'your-email@example.com',
-        to: email,
-        subject: 'Your OTP for 2-Factor Authentication',
-        text: `Your OTP is ${otp}. It is valid for 5 minutes.`
-    };
-
-    transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-            console.error(error);
-            return res.status(500).send('Error in sending OTP');
-        } else {
-            console.log('OTP sent: ' + info.response);
-            // Redirect to OTP page with email passed in the URL
-            res.redirect(`/otpVerification?email=${email}`);
-        }
-    });
-   
-    
-    ;
+app.use("/register",register)
   
-    
-})
-
 app.get("/Register",(req,res)=>{
     res.render("index")
 })
@@ -126,32 +88,7 @@ app.get("/PersonalMessages",isLoggedIn,async (req,res)=>{
 
 
 
-app.post('/login',async(req,res)=>{
-    let {username,password}=req.body;
-
-    username=username.toLowerCase();
-    
-
-    let user=await loginModel.findOne({username})
-    if(!user){
-        return res.status(500).render("LoginError");
-        
-    }
-
-
-    bcrypt.compare(password,user.password,(err,result)=>{
-        if(result){
-            
-            let token=jwt.sign({username:username,userid:user._id},'secret-key');
-            res.cookie('token',token)
-            res.status(200).redirect(`/loginOTP?email=${user.email}&name=${user.name}`);
-            
-        }
-        else{
-            res.render('LoginError')
-        }
-    })
-})
+app.use('/login',login)
 
 app.get("/loginOTP",(req,res)=>{
     let email = req.query.email;
@@ -262,13 +199,13 @@ app.get("/userdelete",isLoggedIn, async (req,res)=>{
  })
 
 
- app.get("/updateuser",isLoggedIn, async (req,res)=>{
+app.get("/updateuser",isLoggedIn, async (req,res)=>{
     console.log(req.user.username)
     let result = await loginModel.findOne({username:req.user.username})
     res.render('update',{result:result})
  })
 
- app.post("/updateuser",isLoggedIn, async (req,res)=>{
+app.post("/updateuser",isLoggedIn, async (req,res)=>{
     let {name,skill,email,github,linkedin}=req.body;
     console.log(req.user.username)
     let m1 = await loginModel.findOneAndUpdate(
@@ -293,7 +230,7 @@ app.get("/userdelete",isLoggedIn, async (req,res)=>{
       
  })
 
- app.get("/otpVerification",(req,res)=>{
+app.get("/otpVerification",(req,res)=>{
 
     
     const email = req.query.email; 
@@ -312,7 +249,7 @@ app.get("/userdelete",isLoggedIn, async (req,res)=>{
     });
  })
 
- app.post("/loginVerify",(req,res)=>{
+app.post("/loginVerify",(req,res)=>{
     const { email, otp } = req.body;
     const storedOtp = otpStorage[email];
         
@@ -330,58 +267,7 @@ app.get("/userdelete",isLoggedIn, async (req,res)=>{
  })
 
  
- app.post("/otpVerification", async (req,res)=>{
-    
-        const { email, otp } = req.body;
-        
-        
-        const storedOtp = otpStorage[email];
-        console.log(req.session.registrationData+" "+otp+" "+otpStorage[email])
-        if (!storedOtp || storedOtp !== otp) {
-            return res.status(400).send("Invalid OTP.");
-        }
-
-        delete otpStorage[email]
-    
-        
-        const registrationData = req.session.registrationData;
-        if (!registrationData) {
-            return res.status(400).send("Registration data missing.");
-        }
-    
-        
-    let { name, username, skill, password, github, linkedin } = registrationData;
-   
-       username=username.toLowerCase();
-
-    let user=await loginModel.findOne({username})
-    if(user){
-        return res.status(500).send("User Alrady Registerd")
-    }
-
-   
-    
-    const saltRounds=10;
-    bcrypt.genSalt(saltRounds,(err,salt)=>{
-        bcrypt.hash(password,salt,async (err,hash)=>{
-            let user = await loginModel.create({
-                name,
-                username,
-                skill,
-                email,
-                github,
-                linkedin,
-                password:hash
-            })
-
-            let token=jwt.sign({username:username,userid:user._id},'secret-key');
-            res.cookie('token',token)
-            res.render('HomePage',{name:name})
-        })
-    })
- })
-
- 
+app.use("/otpVerification",otpVerification) 
  
 
 function isLoggedIn(req,res,next){
