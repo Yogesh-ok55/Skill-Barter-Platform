@@ -40,68 +40,87 @@
             content: " *";
             color: red;
         }
+
+        /* Align labels horizontally */
+        .label-input-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .label-input-container label {
+            flex: 0 0 30%; /* 30% for label */
+        }
+
+        .label-input-container input {
+            flex: 1; /* The input takes the remaining space */
+        }
+
     </style>
 </head>
 <body>
-    <div class="w-full  md:h-screen sm:h-auto bg-gradient-to-r from-zinc-900 to-zinc-800  text-white flex items-center justify-center">
-        <div class="p-5 w-full max-w-2xl bg-zinc-800  rounded-lg shadow-lg animate-slideIn">
+    <div class="w-full md:h-screen sm:h-auto bg-gradient-to-r from-zinc-900 to-zinc-800 text-white flex items-center justify-center">
+        <div class="p-5 w-full max-w-2xl bg-zinc-800 rounded-lg shadow-lg animate-slideIn">
             <!-- Responsive heading -->
-            <h1 class="text-2xl md:text-4xl  font-semibold text-center">Join Skill Barter</h1>
+            <h1 class="text-2xl md:text-4xl font-semibold text-center">Join Skill Barter</h1>
             <!-- Responsive description -->
             <p class="text-center mb-4 md:mb-6 text-base md:text-lg">
                 Create an account and start exchanging skills with others. Let's grow together!
             </p>
-            <form action="/register" method="post" class="flex flex-wrap -mx-2">
+            <form action="/register" method="post" class="flex flex-wrap -mx-2" enctype="multipart/form-data">
                 
-                <div class="w-full md:w-1/2 px-2">
-                    <label class="block" for="name"></label>
+                <div class="w-full md:w-1/2 px-2 label-input-container">
+                    <label class="required" for="name">Name</label>
                     <input id="name" class="block mt-1 w-full px-3 py-2 rounded-md bg-transparent border-2 border-zinc-700 outline-none focus:ring-2 focus:ring-blue-500" 
                            type="text" placeholder="Name" name="name" required />
                 </div>
 
-                <div class="w-full md:w-1/2 px-2">
-                    <label class="block" for="username"></label>
+                <div class="w-full md:w-1/2 px-2 label-input-container">
+                    <label class="required" for="username">Username</label>
                     <input id="username" class="block mt-1 w-full px-3 py-2 rounded-md bg-transparent border-2 border-zinc-700 outline-none focus:ring-2 focus:ring-blue-500" 
                            type="text" minlength="5" placeholder="Username" name="username" required />
                 </div>
 
-                <div class="w-full md:w-1/2 px-2">
-                    <label class="block" for="skill"></label>
+                <div class="w-full md:w-1/2 px-2 label-input-container">
+                    <label class="required" for="skill">Skill</label>
                     <input id="skill" class="block mt-1 w-full px-3 py-2 rounded-md bg-transparent border-2 border-zinc-700 outline-none focus:ring-2 focus:ring-blue-500" 
                            type="text" placeholder="Skill" name="skill" required />
                 </div>
 
-                <div class="w-full md:w-1/2 px-2">
-                    <label class="block" for="email"></label>
+                <div class="w-full md:w-1/2 px-2 label-input-container">
+                    <label class="required" for="email">Email</label>
                     <input id="email" class="block mt-1 w-full px-3 py-2 rounded-md bg-transparent border-2 border-zinc-700 outline-none focus:ring-2 focus:ring-blue-500" 
                            type="email" placeholder="Email" name="email" required />
                 </div>
 
-                <div class="w-full md:w-1/2 px-2">
-                    <label class="block" for="github"></label>
+                <div class="w-full md:w-1/2 px-2 label-input-container">
+                    <label for="github">GitHub</label>
                     <input id="github" class="block mt-1 w-full px-3 py-2 rounded-md bg-transparent border-2 border-zinc-700 outline-none focus:ring-2 focus:ring-blue-500" 
                            type="text" placeholder="GitHub" name="github" />
                 </div>
 
-                <div class="w-full md:w-1/2 px-2">
-                    <label class="block" for="linkedin"></label>
+                <div class="w-full md:w-1/2 px-2 label-input-container">
+                    <label for="linkedin">LinkedIn</label>
                     <input id="linkedin" class="block mt-1 w-full px-3 py-2 rounded-md bg-transparent border-2 border-zinc-700 outline-none focus:ring-2 focus:ring-blue-500" 
                            type="text" placeholder="LinkedIn" name="linkedin" />
                 </div>
 
-                <div class="w-full px-2">
-                    <label class="block" for="password"></label>
-
+                <div class="w-full md:w-1/2 px-2 label-input-container">
+                    <label class="required" for="password">Password</label>
                     <input id="password" class="block mt-1 w-full px-3 py-2 rounded-md bg-transparent border-2 border-zinc-700 outline-none focus:ring-2 focus:ring-blue-500" 
-                        type="password" 
-                        placeholder="Password" 
-                        name="password" 
-                        required 
-                        minlength="8" 
-                        pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$" 
-                        title="Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character." 
-                        />
+                           type="password" 
+                           placeholder="Password" 
+                           name="password" 
+                           required 
+                           minlength="8" 
+                           pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$" 
+                           title="Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character." />
+                </div>
 
+                <div class="w-full md:w-1/2 px-2 label-input-container">
+                    <label class="required" for="image">Profile Image</label>
+                    <input id="image" class="block mt-1 w-full px-3 py-2 rounded-md bg-transparent border-2 border-zinc-700 outline-none focus:ring-2 focus:ring-blue-500" 
+                           type="file" name="image" accept="image/*" required />
                 </div>
 
                 <div class="w-full px-2">
